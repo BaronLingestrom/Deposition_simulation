@@ -16,22 +16,20 @@ Classes:
     - position
     - energy
     - (maybe) type
+    - incoming energy from maxwell-boltzmann distribution: Lambert W distr
+    - layer-layer bonding energy different from in-layer bonding energy
 
 Ráta faktorok:
   - szomszédok befolyása
   - globál T
   - kinetikus energia
-  - w = E_kin * exp(beta*Delta_n)
+  - w = E_kin/T * exp(beta*Delta_n), if goes vacuum then a layer bonding contribution gets added 
 
 Termalizáció:
   - a szomszédok energiájával arányosan osztjuk szét a hopping utáni energia differneciát
   - termál fürdő: konstans kicsi kiegyenlítés T-vel
 
-Rács 3D elrendezése ???
-
-hőmérséklet rendeződés hopping tagja ???
-
-Ráta faktorra kinetikust jobban modellezni ???
+Rács 3D elrendezése - primitive cubic 
 
 
 
