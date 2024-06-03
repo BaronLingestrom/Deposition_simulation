@@ -16,7 +16,7 @@ Classes:
     - position
     - energy
     - (maybe) type
-    - incoming energy from maxwell-boltzmann distribution: Lambert W distr
+    - incoming energy from maxwell-boltzmann distribution: gamma distribution with regards to Energy
     - layer-layer bonding energy different from in-layer bonding energy
 
 Ráta faktorok:
