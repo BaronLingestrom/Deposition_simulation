@@ -25,6 +25,22 @@ E_BOUND = 1                                 # interlayer bonding energy (diff. l
 E_SUBSTRATE = 3                             # substrate bonding energy (lowest layer to substrate)
 
 FRAME_RATE = 5  # actions between each snapshot
+# plot projections
+def project_x(x,y,z):
+    x_out = []
+    for i in range(len(x)):
+        x_out += [x[i]]
+    return x_out
+def project_y(x,y,z):
+    y_out = []
+    for i in range(len(y)):
+        y_out += [y[i]]
+    return y_out
+def project_z(x,y,z):
+    z_out = []
+    for i in range(len(z)):
+        z_out += [z[i]]
+    return z_out
 
 # SOURCE CODE
 class Particle():
@@ -135,6 +151,7 @@ class Lattice():
                 else: # interlayer hopping
                     E_hop -= self.E_bound # (substrate double counting not possible)
                 rate_list += [self.particles[self.get_particle_index(origin)].E/T * np.exp((E_hop-E_old)/T)]
+                if rate_list[-1] < 0: rate_list[-1] = 0
         return origin_list,destination_list,rate_list
     
     def movement_energy_transfer(self,pos):
@@ -176,6 +193,7 @@ class Lattice():
         origin_list,destination_list,rate_list = self.calculate_rate_factors(T)
         if not origin_list:
             return # no action to be done
+        
         idx = np.random.choice(np.arange(len(origin_list)),p=rate_list/np.sum(rate_list))
         origin = origin_list[idx]
         destination = destination_list[idx]
@@ -200,40 +218,97 @@ class Lattice():
         self.movement_energy_transfer(pos)
         return
         
-def animation(particles):
-    fig = plt.figure(figsize=[6,5])
-    ax = fig.add_subplot(projection='3d')
+def animation(particles,heightmap):
+    print("Starting animation...")
+    fig = plt.figure(figsize=[24,20])
+    ax_scatter = fig.add_subplot(2,2,1,projection='3d')
+    ax_heightmap = fig.add_subplot(2,2,2)
+    ax_particle_per_layer = fig.add_subplot(2,2,3)
+    ax_energy_distribution = fig.add_subplot(2,2,4)
     
-    scat = ax.scatter(0, 0, 0, s=90, c=0, cmap='plasma', vmin=0, vmax=40)
-    fig.colorbar(scat)
-    ax.view_init(elev=12, azim=-40)
-    ax.clear()
+    scat = ax_scatter.scatter(0, 0, 0, s=90, c=0, cmap='plasma', vmin=0, vmax=10*(E_BOND+E_BOUND+E_SUBSTRATE))
+    fig.colorbar(scat,label="Kinetic energy of particle")
+    ax_scatter.view_init(elev=12, azim=-40)
+    ax_scatter.set_title("3D plot")
+    ax_scatter.set_xlabel("x")
+    ax_scatter.set_ylabel("y")
+    ax_scatter.set_zlabel("z")
+    ax_scatter.clear()
+    
+    hmap = ax_heightmap.scatter(0,0,s=90,c=0,cmap="viridis",vmin=0,vmax=3)
+    fig.colorbar(hmap,label="Max. height")
+    ax_heightmap.set_title("Heightmap")
+    ax_heightmap.set_xlabel("x")
+    ax_heightmap.set_ylabel("y")
+    ax_heightmap.clear()
+    
+    ppl = ax_particle_per_layer.hist([0],bins=10,range=(0.5,10.5))
+    ax_particle_per_layer.set_title("Number of particles per layer")
+    ax_particle_per_layer.set_xlabel("Layer")
+    ax_particle_per_layer.set_ylabel("Number of particles")
+    ax_particle_per_layer.clear()
+    
+    en_dist = ax_energy_distribution.hist([0],bins=20,density=True,range=(0,10*(E_BOND+E_BOUND+E_SUBSTRATE)))
+    ax_energy_distribution.set_title("Distribution of particle kinetic energy")
+    ax_energy_distribution.set_xlabel("Energy")
+    ax_energy_distribution.set_ylabel("Relative number of particles")
+    ax_energy_distribution.clear()
 
     def update(frame):
+        print("Working on frame {}".format(frame))
         x = [];    y = [];    z = []
         E = []
         for par in particles[frame]:
-            if par.pos[1]%2 == 1:
-                x += [par.pos[0]+0.5]
-            else:
-                x += [par.pos[0]]
-            y += [par.pos[1]]; z += [par.pos[2]]
+            x += [par.pos[0]]; y += [par.pos[1]]; z += [par.pos[2]]
             E += [par.E]
-        ax.clear()
-        scat = ax.scatter(x, y, z, s=90, c=E, cmap='plasma', vmin=0, vmax=40)
-        ax.set_xlim(0, SIZE[0])
-        ax.set_ylim(0, SIZE[1])
-        ax.set_zlim(0, 2)
-        return scat,
+        x_hmap = [];    y_hmap = [];    z_hmap = []
+        for x_i in range(SIZE[0]):
+            for y_i in range(SIZE[1]):
+                if heightmap[frame][x_i,y_i] != 0:
+                    x_hmap += [x_i];  y_hmap += [y_i]; z_hmap += [heightmap[frame][x_i,y_i]]
+        
+        ax_scatter.clear()
+        ax_scatter.set_title("3D plot")
+        ax_scatter.set_xlabel("x")
+        ax_scatter.set_ylabel("y")
+        ax_scatter.set_zlabel("z")
+        scat = ax_scatter.scatter(project_x(x,y,z), project_y(x,y,z), project_z(x,y,z), s=90, c=E, cmap='plasma', vmin=0, vmax=10*(E_BOND+E_BOUND+E_SUBSTRATE))
+        ax_scatter.set_xlim(project_x([0],[0],[0])[0], project_x([SIZE[0]],[0],[0])[0])
+        ax_scatter.set_ylim(project_y([0],[0],[0])[0], project_y([0],[SIZE[0]],[0])[0])
+        ax_scatter.set_zlim(0, 2)
+        
+        ax_heightmap.clear()
+        ax_heightmap.set_title("Heightmap")
+        ax_heightmap.set_xlabel("x")
+        ax_heightmap.set_ylabel("y")
+        hmap = ax_heightmap.scatter(project_x(x_hmap,y_hmap,z_hmap), project_y(x_hmap,y_hmap,z_hmap), s=200, c=z_hmap, cmap="viridis", vmin=0, vmax=3)
+        ax_heightmap.set_xlim(project_x([0],[0],[0])[0]-0.5, project_x([SIZE[0]],[0],[0])[0]-0.5)
+        ax_heightmap.set_ylim(project_y([0],[0],[0])[0]-0.5, project_y([0],[SIZE[0]],[0])[0]-0.5)
+        
+        ax_particle_per_layer.clear()
+        ax_particle_per_layer.set_title("Number of particles per layer")
+        ax_particle_per_layer.set_xlabel("Layer")
+        ax_particle_per_layer.set_ylabel("Number of particles")
+        ppl = ax_particle_per_layer.hist([z[i]+1 for i in range(len(z))],bins=10,range=(0.5,10.5))
+        ax_particle_per_layer.set_ylim(0,SIZE[0]*SIZE[1])
+        
+        ax_energy_distribution.clear()
+        ax_energy_distribution.set_title("Distribution of particle kinetic energy")
+        ax_energy_distribution.set_xlabel("Energy")
+        ax_energy_distribution.set_ylabel("Relative number of particles")
+        en_dist = ax_energy_distribution.hist(E,bins=20,density=True,range=(0,10*(E_BOND+E_BOUND+E_SUBSTRATE)))
+        return scat,hmap,ppl,en_dist,
     
     anim = ani.FuncAnimation(fig=fig, func=update, frames=len(particles), interval=300)
+    print("Animation completed!")
     anim.save("deposition.gif", writer='pillow')
+    print("Animation saved!")
     return
 
 def main():
     lattice = Lattice(SIZE,LATTICE,NEIGHBORING_SITES,E_BOND,E_BOUND,E_SUBSTRATE)
 
-    particles = []
+    particles = []; heightmap = []
     for i,T in enumerate(TEMPERATURES):
         print("Current temperature: T = {:.3f}\t ({}/{})".format(T,i+1,len(TEMPERATURES)))
         action_sequence = np.array([0]*HOPPING_PER_TEMPERATURE + [1]*NEW_PARTICLE_PER_TEMPERATURE)
@@ -245,13 +320,16 @@ def main():
                 lattice.hopping_action(T)
             else:               # new incident particle
                 lattice.new_particle_action()
+            # animation sampling
             if ( i*(HOPPING_PER_TEMPERATURE+NEW_PARTICLE_PER_TEMPERATURE)+j )%FRAME_RATE == 0:
                 particles.append(copy.deepcopy(lattice.particles))
+                heightmap.append(copy.deepcopy(lattice.heightmap))
         print("  Current particle number: {}".format(len(lattice.particles)))
 
-    animation(particles)
+    animation(particles,heightmap)
     return
 
 if __name__=="__main__":
     print("Running simulation...")
     main()
+    print("Simulation finished!")
