@@ -5,6 +5,8 @@
 # EXTERNAL LIBRARIES
 import numpy as np
 import scipy as sp
+import matplotlib.pyplot as plt
+import matplotlib.animation as ani
 import copy
 
 # GLOBAL VARIABLES
@@ -13,14 +15,16 @@ LATTICE = np.zeros(SIZE)
 #   vectors to neighboring sites
 NEIGHBORING_SITES = [np.array([0,0,1]),np.array([0,0,-1]),
                      np.array([1,0,0]),np.array([0,1,0]),
-                     np.array([-1,0,0]),np.array([0,-1,0])
-                     ,np.array([1,-1,0]),np.array([-1,1,0])] # triangle lattice
+                     np.array([-1,0,0]),np.array([0,-1,0]),
+                     np.array([1,-1,0]),np.array([-1,1,0])] # triangle lattice
 TEMPERATURES = 1/(np.linspace(0.1,10,10))
-HOPPING_PER_TEMPERATURE = 10
-NEW_PARTICLE_PER_TEMPERATURE = 2
-E_BOND = 0.2                                  # intralayer bonding energy (same layer)
-E_BOUND = 0.5                                 # interlayer bonding energy (diff. layers)
-E_SUBSTRATE = 0.5                             # substrate bonding energy (lowest layer to substrate)
+HOPPING_PER_TEMPERATURE = 3
+NEW_PARTICLE_PER_TEMPERATURE = 10
+E_BOND = 1                                  # intralayer bonding energy (same layer)
+E_BOUND = 1                                 # interlayer bonding energy (diff. layers)
+E_SUBSTRATE = 3                             # substrate bonding energy (lowest layer to substrate)
+
+FRAME_RATE = 5  # actions between each snapshot
 
 # SOURCE CODE
 class Particle():
@@ -29,6 +33,8 @@ class Particle():
         self.E = E
     def __copy__(self):
         return type(self)(self.pos,self.E)
+    def __repr__(self):
+        return str(self.pos)
 
 class Lattice():
     def __init__(self,size,lattice,neighbors,E_bond,E_bound,E_substrate):
@@ -98,7 +104,7 @@ class Lattice():
         # generating a random incoming particle with energy distribution of 
         # Maxwell-Boltzmann and a random position with a uniform angular
         # distribution assuming the slit of the effusion cell is really far away
-        E = sp.stats.gamma.rvs(1.5, loc=0, scale=2)  #  gamma.pdf(y, a) / scale    with    y = (x - loc) / scale
+        E = sp.stats.gamma.rvs(1.5, loc=0, scale=10)  #  gamma.pdf(y, a) / scale    with    y = (x - loc) / scale
         pos = list(np.random.randint(0,self.size))
         return Particle(pos, E)     # position in 2D
     
@@ -193,22 +199,57 @@ class Lattice():
         pos = self.add_particle(self.generate_new_particle())
         self.movement_energy_transfer(pos)
         return
+        
+def animation(particles):
+    fig = plt.figure(figsize=[6,5])
+    ax = fig.add_subplot(projection='3d')
+    
+    scat = ax.scatter(0, 0, 0, s=90, c=0, cmap='plasma', vmin=0, vmax=40)
+    fig.colorbar(scat)
+    ax.view_init(elev=12, azim=-40)
+    ax.clear()
 
+    def update(frame):
+        x = [];    y = [];    z = []
+        E = []
+        for par in particles[frame]:
+            if par.pos[1]%2 == 1:
+                x += [par.pos[0]+0.5]
+            else:
+                x += [par.pos[0]]
+            y += [par.pos[1]]; z += [par.pos[2]]
+            E += [par.E]
+        ax.clear()
+        scat = ax.scatter(x, y, z, s=90, c=E, cmap='plasma', vmin=0, vmax=40)
+        ax.set_xlim(0, SIZE[0])
+        ax.set_ylim(0, SIZE[1])
+        ax.set_zlim(0, 2)
+        return scat,
+    
+    anim = ani.FuncAnimation(fig=fig, func=update, frames=len(particles), interval=300)
+    anim.save("deposition.gif", writer='pillow')
+    return
 
 def main():
     lattice = Lattice(SIZE,LATTICE,NEIGHBORING_SITES,E_BOND,E_BOUND,E_SUBSTRATE)
+
+    particles = []
     for i,T in enumerate(TEMPERATURES):
         print("Current temperature: T = {:.3f}\t ({}/{})".format(T,i+1,len(TEMPERATURES)))
         action_sequence = np.array([0]*HOPPING_PER_TEMPERATURE + [1]*NEW_PARTICLE_PER_TEMPERATURE)
         np.random.shuffle(action_sequence)
         # action: hopping(0) or incident particle(1) happens
         print("  Action sequence: {}".format(action_sequence))
-        for action in action_sequence:
+        for j,action in enumerate(action_sequence):
             if action == 0:     # hopping action
                 lattice.hopping_action(T)
             else:               # new incident particle
                 lattice.new_particle_action()
+            if ( i*(HOPPING_PER_TEMPERATURE+NEW_PARTICLE_PER_TEMPERATURE)+j )%FRAME_RATE == 0:
+                particles.append(copy.deepcopy(lattice.particles))
         print("  Current particle number: {}".format(len(lattice.particles)))
+
+    animation(particles)
     return
 
 if __name__=="__main__":
