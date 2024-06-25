@@ -150,8 +150,7 @@ class Lattice():
                     E_hop -= self.E_bond
                 else: # interlayer hopping
                     E_hop -= self.E_bound # (substrate double counting not possible)
-                rate_list += [self.particles[self.get_particle_index(origin)].E/T * np.exp((E_hop-E_old)/T)]
-                if rate_list[-1] < 0: rate_list[-1] = 0
+                rate_list += [(self.particles[self.get_particle_index(origin)].E/T)**2 * np.exp((E_hop-E_old)/T)]
         return origin_list,destination_list,rate_list
     
     def movement_energy_transfer(self,pos):
