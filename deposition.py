@@ -18,9 +18,9 @@ NEIGHBORING_SITES = [np.array([0,0,1]),np.array([0,0,-1]),
 TEMPERATURES = 1/(np.linspace(0.1,10,10))
 HOPPING_PER_TEMPERATURE = 10
 NEW_PARTICLE_PER_TEMPERATURE = 2
-E_BOND = 1                                  # intralayer bonding energy (same layer)
-E_BOUND = 1                                 # interlayer bonding energy (diff. layers)
-E_SUBSTRATE = 1                             # substrate bonding energy (lowest layer to substrate)
+E_BOND = 0.2                                  # intralayer bonding energy (same layer)
+E_BOUND = 0.5                                 # interlayer bonding energy (diff. layers)
+E_SUBSTRATE = 0.5                             # substrate bonding energy (lowest layer to substrate)
 
 # SOURCE CODE
 class Particle():
@@ -98,7 +98,7 @@ class Lattice():
         # generating a random incoming particle with energy distribution of 
         # Maxwell-Boltzmann and a random position with a uniform angular
         # distribution assuming the slit of the effusion cell is really far away
-        E = sp.stats.gamma.rvs(1.5, loc=0, scale=1)  #  gamma.pdf(y, a) / scale    with    y = (x - loc) / scale
+        E = sp.stats.gamma.rvs(1.5, loc=0, scale=2)  #  gamma.pdf(y, a) / scale    with    y = (x - loc) / scale
         pos = list(np.random.randint(0,self.size))
         return Particle(pos, E)     # position in 2D
     
@@ -182,7 +182,7 @@ class Lattice():
         self.heightmap[*destination[:2]] = self.get_max_height(destination[:2])
         neighbor_count = len([site for site in self.intralayer_interaction_sites(destination) if self.lattice[*site]]
                              +[site for site in self.interlayer_interaction_sites(destination) if self.lattice[*site]])
-        if neighbor_count==0: # desorption
+        if neighbor_count==0 and destination[2]!=0: # desorption
             self.sub_particle(particle_idx)
         else: # simple hopping
             self.hopping_energy_transfer(origin,destination)
@@ -208,6 +208,7 @@ def main():
                 lattice.hopping_action(T)
             else:               # new incident particle
                 lattice.new_particle_action()
+        print("  Current particle number: {}".format(len(lattice.particles)))
     return
 
 if __name__=="__main__":
