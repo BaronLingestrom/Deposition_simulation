@@ -1,4 +1,4 @@
-# Deposition simulation - WIP
+# Deposition simulation
 by Robin Kucsera and Zoltan Santha, 2024\
 project wotk for BME Computer Simulation in Physics course (BMETE15MF74)
 
