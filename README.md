@@ -1,37 +1,50 @@
-# Deposition_simulation
+# Deposition simulation - WIP
+by Robin Kucsera and Zoltan Santha, 2024\
+project wotk for BME Computer Simulation in Physics course (BMETE15MF74)
 
-Részecske hozzáadás:
-  - külső függvény
-  - energia generálás eloszlás (Maxwell)
-  - random rácsbeli x-y hely
-  - output részecske változóban
+## Description
 
-Classes:
-  - Chamber: overall parameters
-  - Lattice:
-    - lattice bool(occupied, unoccupied)
-    - particle list
-    - adjecency matrix (getting the feeling that it does not give enough information to be worth having)
-  - Particle:
-    - position
-    - energy
-    - (maybe) type
-    - incoming energy from maxwell-boltzmann distribution: gamma distribution with regards to Energy
-    - layer-layer bonding energy different from in-layer bonding energy
+## Usage
 
-Ráta faktorok:
-  - szomszédok befolyása
-  - globál T
-  - kinetikus energia
-  - w = E_kin/T * exp(beta*Delta_n), if goes vacuum then a layer bonding contribution gets added 
+## External libraries
+- NumPy
+- SciPy
+- Matplotlib
+- (copy module)
 
-Termalizáció:
-  - a szomszédok energiájával arányosan osztjuk szét a hopping utáni energia differneciát
-  - termál fürdő: konstans kicsi kiegyenlítés T-vel
+## Implementation
 
-Rács 3D elrendezése - primitive cubic 
+### Global variables
 
+### Projection functions
 
+### Classes
 
+#### Particle
+- Properties:
+  - pos: &nbsp;
+  postition in lattice matrix (3D)
+  - E: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  kinetic energy
+- Methods:
+  ~~~python
+  class Particle():
+    def __init__(self, pos, E)
+    def __copy__(self)
+    def __repr__(self)
+  ~~~
 
-
+#### Lattice
+- Properties:
+  - size: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  x,y dimensions of a layer (lattice size)
+  - lattice_template: &nbsp;
+  template array for adding new layer
+  - neighbors: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  list of vectors pointing to (nearest) neighboring sites (matrix represention)
+  - lattice:
+  - heightmap:
+  - E_bond:
+  - E_bound:
+  - E_substrate:
+  - particles:
