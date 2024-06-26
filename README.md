@@ -29,9 +29,15 @@ project wotk for BME Computer Simulation in Physics course (BMETE15MF74)
 - Methods:
   ~~~python
   class Particle():
-    def __init__(self, pos, E)
-    def __copy__(self)
-    def __repr__(self)
+    def __init__(self, pos, E):
+      ...
+      return
+    def __copy__(self):
+      ...
+      return
+    def __repr__(self):
+      ...
+      return
   ~~~
 
 #### Lattice
