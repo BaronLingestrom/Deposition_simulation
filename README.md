@@ -31,13 +31,10 @@ project wotk for BME Computer Simulation in Physics course (BMETE15MF74)
   class Particle():
     def __init__(self, pos, E):
       ...
-      return
     def __copy__(self):
-      ...
-      return
+      return type(self)(self.pos,self.E)
     def __repr__(self):
-      ...
-      return
+      return str(self.pos)
   ~~~
 
 #### Lattice
