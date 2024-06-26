@@ -4,6 +4,24 @@ project wotk for BME Computer Simulation in Physics course (BMETE15MF74)
 
 ## Description
 
+The project is about thin-film deposition using evaporation. We concider a small target and a vapor source located far away. This results in a uniform spatial distribution of atoms originating from the beam, simplifying the model. The evaporated atoms form a gas resulting in that the incoming particles have an energy distribution according to the kinetic theory of gases:
+
+$f(E) = 2\sqrt{\frac{E}{\pi}}(\frac{1}{k_BT})^{3/2}\exp(-\frac{E}{k_BT})$,
+
+which can be written equivalently as a gamma distribution, with $3/2$ shape factor and $k_BT$ scale parameter.
+
+The implementation builds on the kinetic Monte-Carlo algorithm. The rate of the particle hopping in 3D is determined by
+
+$w_{i\rightarrow j}=(\frac{E_{kin}}{T})^2\exp(\frac{E_{int,j}-E_{int,i}}{T})$,
+
+where $E_{kin}$ is the kinetic energy of the particle, $E_{int,i}$ and $E_{int,j}$ is the interaction energy of the particle at position $i$ and $j$ respectively. The particle desorption is considered as a hopping to a site with no neighboring particles, so this effect is also taken into consideration. We also implemented a kinetic energy transfer for moving particles to model the thermal effects of a particle movement. Each particle movement results in the kinetic energy change of the nearby particles according to
+
+$\Delta E_i=\frac{\bar{E}(\bar{E}-E_i)}{\sum_j|\bar{E}-E_j|}$,
+
+where $\bar{E}$ is the average kinetic energy of the considered (nearby) particles.
+
+The output of the simulation is GIF of four time evolving plots: the atomic deposition in 3D, the 2D heightmap of the depostied particles, the number of particles in each layer and the kinetic energy distribution of the deposited particles.
+
 ## Usage
 The simulation is written in one single python script. After changing the global varibles and projection functions, the script can be simply run from a terminal using python. A GIF is saved after the simulation.
 
