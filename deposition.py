@@ -29,12 +29,12 @@ FRAME_RATE = 5  # actions between each snapshot
 def project_x(x,y,z):
     x_out = []
     for i in range(len(x)):
-        x_out += [x[i]]
+        x_out += [x[i]+y[i]/2]
     return x_out
 def project_y(x,y,z):
     y_out = []
     for i in range(len(y)):
-        y_out += [y[i]]
+        y_out += [y[i]*np.sqrt(3)/2]
     return y_out
 def project_z(x,y,z):
     z_out = []
@@ -272,8 +272,8 @@ def animation(particles,heightmap):
         ax_scatter.set_ylabel("y")
         ax_scatter.set_zlabel("z")
         scat = ax_scatter.scatter(project_x(x,y,z), project_y(x,y,z), project_z(x,y,z), s=90, c=E, cmap='plasma', vmin=0, vmax=10*(E_BOND+E_BOUND+E_SUBSTRATE))
-        ax_scatter.set_xlim(project_x([0],[0],[0])[0], project_x([SIZE[0]],[0],[0])[0])
-        ax_scatter.set_ylim(project_y([0],[0],[0])[0], project_y([0],[SIZE[0]],[0])[0])
+        ax_scatter.set_xlim(project_x([0],[0],[0])[0], project_x([SIZE[0]],[SIZE[1]],[0])[0])
+        ax_scatter.set_ylim(project_y([0],[0],[0])[0], project_y([SIZE[0]],[SIZE[1]],[0])[0])
         ax_scatter.set_zlim(0, 2)
         
         ax_heightmap.clear()
@@ -281,8 +281,8 @@ def animation(particles,heightmap):
         ax_heightmap.set_xlabel("x")
         ax_heightmap.set_ylabel("y")
         hmap = ax_heightmap.scatter(project_x(x_hmap,y_hmap,z_hmap), project_y(x_hmap,y_hmap,z_hmap), s=200, c=z_hmap, cmap="viridis", vmin=0, vmax=3)
-        ax_heightmap.set_xlim(project_x([0],[0],[0])[0]-0.5, project_x([SIZE[0]],[0],[0])[0]-0.5)
-        ax_heightmap.set_ylim(project_y([0],[0],[0])[0]-0.5, project_y([0],[SIZE[0]],[0])[0]-0.5)
+        ax_heightmap.set_xlim(project_x([0],[0],[0])[0]-0.5, project_x([SIZE[0]],[SIZE[1]],[0])[0]-0.5)
+        ax_heightmap.set_ylim(project_y([0],[0],[0])[0]-0.5, project_y([SIZE[0]],[SIZE[1]],[0])[0]-0.5)
         
         ax_particle_per_layer.clear()
         ax_particle_per_layer.set_title("Number of particles per layer")
